@@ -41,6 +41,17 @@ class AzureOauthProvider extends AbstractProvider implements ProviderInterface
 
         return json_decode($response->getBody(), true);
     }
+    
+    protected function getGroupsByToken($token)
+    {
+        $response2 = $this->getHttpClient()->get('https://graph.microsoft.com/v1.0/me/memberOf', [
+            'headers' => [
+                'Authorization' => 'Bearer '.$token,
+            ],
+        ]);
+        
+        return json_decode($response2->getBody(), true);
+    }    
 
     public function user()
     {
