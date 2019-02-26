@@ -60,16 +60,28 @@ class AzureOauthProvider extends AbstractProvider implements ProviderInterface
         }
 
         $response = $this->getAccessTokenResponse($this->getCode());
+        
+        $response2 = $this->getAccessTokenResponse($this->getCode());
 
         $user = $this->mapUserToObject($this->getUserByToken(
             $token = Arr::get($response, 'access_token')
         ));
+        
+        $usergroups = $this->mapUserToObject($this->getGroupsByToken(
+            $token = Arr::get($response2, 'access_token')
+        ));    
 
         $user->idToken = Arr::get($response, 'id_token');
         $user->expiresAt = time() + Arr::get($response, 'expires_in');
+        
+        $usergroups->idToken = Arr::get($response, 'id_token');
+        $usergroups->expiresAt = time() + Arr::get($response, 'expires_in');
 
         return $user->setToken($token)
                     ->setRefreshToken(Arr::get($response, 'refresh_token'));
+        
+         return $usergroups->setToken($token)
+                    ->setRefreshToken(Arr::get($response2, 'refresh_token'));
     }
 
     protected function mapUserToObject(array $user)
@@ -78,7 +90,7 @@ class AzureOauthProvider extends AbstractProvider implements ProviderInterface
             'id'                => $user['id'],
             'name'              => $user['displayName'],
             'email'             => $user['mail'],
-
+            'groups'.           => $usergroups['displayName']
             'businessPhones'    => $user['businessPhones'],
             'displayName'       => $user['displayName'],
             'givenName'         => $user['givenName'],
